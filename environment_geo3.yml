@@ -1,0 +1,42 @@
+# create environment with 
+#   conda env create -n geo3 -f environment_geo3.yml
+name: geo3
+channels:
+- conda-forge
+dependencies:
+- python=3.6
+- numpy
+- scipy
+- matplotlib=2.0.2
+- shapely
+- ipython
+- jupyter
+- ipywidgets
+- ipykernel
+- gdal
+- libgdal
+- basemap
+- geopandas
+- geojson
+- pysal
+- pyepsg
+- rasterstats
+- requests
+- folium
+- seaborn
+- pyproj
+- cartopy
+- rasterio
+- pykml
+- ipyleaflet
+- mplleaflet
+- ffmpeg
+- xarray
+- bottleneck
+- netcdf4
+- dask
+- distributed
+- pip
+- pip:
+    - utm
+    - nose
