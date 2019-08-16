@@ -36,6 +36,7 @@ dependencies:
 - netcdf4
 - dask
 - distributed
+- wget
 - pip
 - pip:
     - utm
