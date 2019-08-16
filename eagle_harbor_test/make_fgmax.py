@@ -23,7 +23,7 @@ fg.tstart_max =  5.     # when to start monitoring max values
 fg.tend_max = 1.e10       # when to stop monitoring max values
 fg.dt_check = 5.         # target time (sec) increment between updating 
                            # max values
-fg.min_level_check = 4    # which levels to monitor max on
+fg.min_level_check = 3    # which levels to monitor max on
 fg.arrival_tol = 1.e-2    # tolerance for flagging arrival
 
 fg.input_file_name = 'fgmax_eagle_harbor.txt'

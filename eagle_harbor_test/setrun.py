@@ -89,7 +89,7 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.lower[1] = 47.5 - arcsec16      # south latitude
     clawdata.upper[1] = 47.8 - arcsec16        # north latitude
 
-    # choose mx and my so coarsest grid has 2 minute resolution:
+    # choose mx and my so coarsest grid has 30 second resolution:
     clawdata.num_cells[0] = 60
     clawdata.num_cells[1] = 36
 
@@ -288,7 +288,7 @@ def setrun(claw_pkg='geoclaw'):
     amrdata = rundata.amrdata
 
     # max number of refinement levels:
-    amrdata.amr_levels_max = 4
+    amrdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least mxnest-1)
     # dx = dy = 30", 6", 2", 1/3"
@@ -310,7 +310,7 @@ def setrun(claw_pkg='geoclaw'):
     amrdata.flag2refine = True
 
     # steps to take on each level L between regriddings of level L+1:
-    amrdata.regrid_interval = 10000000 # never regrid!
+    amrdata.regrid_interval = 2
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
@@ -345,19 +345,19 @@ def setrun(claw_pkg='geoclaw'):
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
 
     regions = rundata.regiondata.regions
-    regions.append([1,2,0,1e9,-180,0,0,90])
+    
+    # Entire domain:
+    regions.append([1,2,0,1e9,clawdata.lower[0]-0.1, clawdata.upper[0]+0.1, \
+                              clawdata.lower[1]-0.1, clawdata.upper[1]+0.1])
 
     # Seattle Fault source region out to passageways:
-    regions.append([2,2,0,1e9,-122.62, -122.1,47.38,48.08])
+    regions.append([2,2, 0,1e9, -122.62, -122.1, 47.38, 48.08])
 
     # region covering Bainbridge and Seattle:
-    regions.append([3,3,0.,1e9,\
-        -122.62, -122.3, 47.52, 47.755])
+    regions.append([2,3, 0.,1e9, -122.62, -122.3, 47.52, 47.755])
 
     # around Eagle Harbor:
-    regions.append([4,4,0.,1e9,\
-        -122.56, -122.47, 47.61, 47.64])
-
+    regions.append([4,4, 0.,1e9, -122.56, -122.47, 47.61, 47.64])
 
 
     # ---------------

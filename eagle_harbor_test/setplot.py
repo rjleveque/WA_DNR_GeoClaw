@@ -12,9 +12,9 @@ from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 
-from clawpack.geoclaw import topotools
-from six.moves import range
-from imp import reload
+#from clawpack.geoclaw import topotools
+#from six.moves import range
+#from importlib import reload
 
 import os
 
@@ -26,7 +26,7 @@ cmax_land = 40.
 bg_image = True
 
 if bg_image:
-    GE_image = plt.imread('EagleHarborGE.png')
+    GE_image = plt.imread('EagleHarborGE.jpg')
     GE_extent = [-122.55,-122.48,47.61,47.64]
 
     def background_image(current_data):
@@ -89,7 +89,7 @@ def setplot(plotdata=None):
     plotfigure.kwargs = {'figsize':(8,5)}
 
     # Set up for axes in this figure:
-    plotaxes = plotfigure.new_plotaxes('pcolor')
+    plotaxes = plotfigure.new_plotaxes()
     plotaxes.title = 'Surface'
     plotaxes.scaled = False # need to set aspect ratio properly for lat/long
 
@@ -101,7 +101,8 @@ def setplot(plotdata=None):
         xticks(rotation=20)
 
     plotaxes.afteraxes = aa
-
+    #plotaxes.xlimits = [-122.7,-122.16]
+    #plotaxes.ylimits = [47.2,48.3]
 
     # Water
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
@@ -111,8 +112,12 @@ def setplot(plotdata=None):
     plotitem.pcolor_cmin = cmin
     plotitem.pcolor_cmax = cmax
     plotitem.add_colorbar = True
-    plotitem.amr_celledges_show = [0,0,0]
-    plotitem.patchedges_show = 0
+    plotitem.colorbar_shrink = 0.8
+    plotitem.amr_celledges_show = [0]
+    #plotitem.celledges_show = 0
+    #plotitem.patchedges_show = 0
+    plotitem.amr_patchedges_show = [0]
+
 
     # Land
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
@@ -123,19 +128,7 @@ def setplot(plotdata=None):
     plotitem.add_colorbar = False
     plotitem.amr_celledges_show = [0]
     plotitem.patchedges_show = 0
-    #plotaxes.xlimits = [-122.7,-122.16]
-    #plotaxes.ylimits = [47.2,48.3]
 
-    # add contour lines of bathy if desired:
-    plotitem = plotaxes.new_plotitem(plot_type='2d_contour')
-    plotitem.show = False
-    plotitem.plot_var = geoplot.topo
-    plotitem.contour_levels = linspace(-3000,-3000,1)
-    plotitem.amr_contour_colors = ['y']  # color on each level
-    plotitem.kwargs = {'linestyles':'solid','linewidths':2}
-    plotitem.amr_contour_show = [1,0,0]  
-    plotitem.celledges_show = 0
-    plotitem.patchedges_show = 0
 
 
 
@@ -165,7 +158,7 @@ def setplot(plotdata=None):
     plotitem.pcolor_cmin = cmin
     plotitem.pcolor_cmax = cmax
     plotitem.add_colorbar = True
-    plotitem.amr_data_show = [0,0,0,1]
+    plotitem.amr_data_show = [0,0,1] # only show on finest
     plotitem.amr_celledges_show = [0,0,0]
     plotitem.patchedges_show = 0
 
@@ -180,6 +173,17 @@ def setplot(plotdata=None):
     plotitem.amr_celledges_show = [0]
     plotitem.patchedges_show = 0
 
+    # add contour lines of bathy if desired:
+    plotitem = plotaxes.new_plotitem(plot_type='2d_contour')
+    #plotitem.show = False
+    plotitem.plot_var = geoplot.topo
+    plotitem.contour_levels = [0]
+    plotitem.amr_contour_colors = ['yellow']  # color on each level
+    plotitem.kwargs = {'linestyles':'solid','linewidths':2}
+    plotitem.amr_contour_show = [0,0,1]  
+    plotitem.celledges_show = 0
+    plotitem.patchedges_show = 0
+    
     #-----------------------------------------
     # Figure for zoom on Bainbridge / Seattle
     #-----------------------------------------
@@ -222,20 +226,63 @@ def setplot(plotdata=None):
     #-----------------------------------------
     # Figures for gauges
     #-----------------------------------------
+
     plotfigure = plotdata.new_plotfigure(name='gauge plot', figno=300, \
                     type='each_gauge')
+    plotfigure.kwargs = {'figsize': (11,6)}
     #plotfigure.clf_each_gauge = False
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(2,1,1)'
     #plotaxes.ylimits = [-1,10]
     plotaxes.title = 'Flow depth'
+    plotaxes.time_scale = 1./60.
+    plotaxes.time_label = ''
+    
+    def add_ylabel_depth(current_data):
+        from pylab import ylabel, grid
+        ylabel('water depth (m)')
+        grid(True)
+        
+    plotaxes.afteraxes = add_ylabel_depth
 
     # Plot depth as blue curve:
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 0
     plotitem.plotstyle = 'b-'
 
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(2,1,2)'
+    #plotaxes.ylimits = [-1,10]
+    plotaxes.title = 'Flow speed (m/s)'
+    plotaxes.time_scale = 1./60.
+    plotaxes.time_label = 'minutes'
+
+    def add_ylabel_speed(current_data):
+        from pylab import ylabel, tight_layout, grid
+        ylabel('speed (m/s)')
+        grid(True)
+        tight_layout()
+        
+    plotaxes.afteraxes = add_ylabel_speed
+    
+    def speed(current_data):
+        from numpy import sqrt, maximum
+        q = current_data.q
+        h = q[0,:]
+        hu = q[1,:]
+        hv = q[2,:]
+        s = sqrt(hu**2 + hv**2) / maximum(h,0.001)
+        return s
+        
+    # Plot depth as blue curve:
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = speed
+    plotitem.plotstyle = 'b-'
+    
 
     #-----------------------------------------
     # Figures for fgmax plots
@@ -259,7 +306,7 @@ def setplot(plotdata=None):
 
     plotdata.printfigs = True                # print figures
     plotdata.print_format = 'png'            # file format
-    plotdata.print_framenos = 'all'          # list of frames to print
+    plotdata.print_framenos = 'all'         # list of frames to print
     plotdata.print_gaugenos = 'all'          # list of gauges to print
     plotdata.print_fignos = 'all'            # list of figures to print
     plotdata.html = True                     # create html files of plots?
